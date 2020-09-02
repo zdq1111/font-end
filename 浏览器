@@ -1,0 +1,648 @@
+# 浏览器
+
+## http协议
+
+### 基于TCP，规定了 Request-Response 的模式，客户端发起
+
+### 协议格式
+
+- request
+
+	- request line
+
+		- method
+		- path
+		- version
+
+	- head
+	- body
+
+- response
+
+	- response line
+
+		- version
+		- status code
+		- status text
+
+	- head
+	- body
+
+### methods
+
+- GET
+
+	- 资源获取，浏览器通过地址栏访问页面
+
+- POST
+
+	- 表单提交
+
+- HEAD
+
+	- 只返回请求头
+
+- PUT 和 DELETE
+
+	- 添加资源和删除资源
+
+- CONNECT
+
+	- HTTPS 和 WebSocket
+
+- OPTIONS 和 TRACE
+
+	- 用于调试
+
+### 状态码
+
+- 1xx
+
+	- 状态被浏览器 http 库直接处理
+
+- 2xx
+
+	- 网页请求成功
+
+- 3xx 
+
+	- 301（永久） 和 302（临时） 两个状态表示当前资源已经被转移
+	- 304
+
+		- 客户端本地已经有缓存的版本
+		- 当服务端通过时间或者 tag，发现没有更新的
+时候，就会返回一个不含 body 的 304 状
+
+- 4xx
+
+	- 403
+
+		- 无权限
+
+	- 404
+
+		- 表示请求的页面不存在
+
+- 5xx
+
+	- 500
+
+		- 服务端错误
+
+	- 503
+
+		- 服务端暂时性错误，可以一会再试
+
+### HTTP Head
+
+- Request Header
+
+	- Accept
+
+		- 浏览器接受的格式
+
+	- Accept-Encoding
+
+		- 浏览器接受的编码格式
+
+	- Accept-language
+
+		- 浏览器接受的语言
+
+	- Cache-Control
+
+		- 控制缓存的时效性
+
+	- Connection
+
+		- 连接方式， keep-alive服务器复用连接
+
+	- Host
+
+		- HTTP访问的域名
+
+	- If-Modified-Since
+
+		- 上次访问的更改时间，该时间内没更新服务器304
+
+	- If-None-Match
+
+		- 上次访问的E-Tag 页面信息摘要
+
+	- User-Agent
+
+		- 客户端标识
+
+	- Cookie
+
+		- 客户端存储的cookie字符串
+
+- Response Header
+
+	- Cache-Control
+
+		- 缓存控制 max-age=0不缓存
+
+	- Connection
+
+		- 连接类型
+
+	- Content-Encoding
+
+		- 内容编码方式 gzip
+
+	- Content-Length
+
+		- 内容长度 浏览器判断内容是否结束
+
+	- Content-Type
+
+		- 内容类型 网页text/html
+
+	- Date
+
+		- 服务器日期
+
+	- ETag
+
+		- 页面信息摘要 用于判断是否需要到服务器取回页面
+
+	- Expires
+
+		- 过期时间 用于判断下次请求是否要到服务器取回页面
+
+	- Keep-Alive
+
+		- 保持连接的信息 timeout=5，max=100
+
+	- Last-Modified
+
+		- 页面上次修改的时间
+
+	- Server
+
+		- 服务端软件类型
+
+	- Set-Cookie
+
+		- 设置cookie 可多个
+
+	- Via
+
+		- 服务端的请求链路 调试场景
+
+### HTTP Request Body
+
+- application/json
+- application/x-www-form-urlencoded
+
+	- form 标签提交产生的 html 请求
+
+- multipart/form-data
+
+	- 文件上传
+
+- text/xml
+
+### HTTPS
+
+- 确定请求的目标服务端身份
+- 保证传输的数据不会被网络中间节点窃听或者篡改
+- TLS 加密通道。TLS 构建于 TCP 协议之上
+
+### HTTP 2
+
+- 支持服务端推送，第一个请求到服务端时提前把一部分内容推送给客户端
+- TCP 连接复用
+
+## 解析http请求回来的html
+
+### 字符流读取字符，拆成词
+
+-  词（token）是如何被拆分的
+
+	- 标签开始、属性、标签结束、注释、CDATA 节点几种
+	- 使用状态机
+
+		- 判断是哪个词
+		- 每个函数当做一个状态，参数是接受的字符，返回值是下一个状态函数
+		- emitToken 函数来输出解析好的 token（词）
+
+### 构建 DOM 树
+
+- 栈
+- 构建node类，节点均为其实例
+
+	- Element
+	- Text
+
+- 规则 https://html.spec.whatwg.org/multipage/syntax.html#tree-construction
+
+## DOM添加CSS
+
+### CSS选择器
+
+- 元素匹配规则，根据优先级调整覆盖
+- 空格: 后代，选中它的子节点和所有子节点的后代节点
+
+	- 匹配到本标签的结束标签时回退
+
+- >: 子代，选中它的子节点
+
+	- 父元素约束
+
+- +：直接后继选择器，选中它的下一个相邻节点
+- ~：后继，选中它之后所有的相邻节点
+
+	- 后继选择器只作用于一层
+	- 选择器的激活，带上一个条件：父元素
+
+- ||：列，选中表格中的一列
+- 逗号分隔，表示“或”的关系
+
+## 排版
+
+### 正常流排版
+
+- 顺次排布
+
+	- 主轴、交叉轴
+
+- 折行
+- 多数元素被当作长方形盒来排版
+- display 为 inline 的元素，是被拆成文本来排版
+
+	- margin 属性和 border 属性也会被计算进排版前进距离当中
+
+- display 不为 inline 的元素或者伪元素，会以盒的形式跟文字一起排版
+
+### 文字排版
+
+- 行模型和文字在行模型中的排布
+
+	- 字体信息
+
+		- advance 代表每一个文字排布后在主轴上的前进距离
+
+	- CSS 属性
+
+		- lineheight、letter-spacing、word-spacing 等
+
+- 行模型规定了行顶、行底、文字区域、基线等对齐方式
+
+### 元素和文字的混排
+
+- 元素 定义为占据长方形的区域
+
+	- 边框、边距和留白
+	- 盒模型
+
+		-  margin、border、padding、width/height 等属性
+		- vertical-align 属性决定了盒在交叉轴方向的位置， 会影响实际行高
+
+### 绝对定位元素
+
+- 把自身从正常流抽出， 不参加排版计算，也不影响其它元素
+- 由 top 和 left 等属性确定自身的位置，position 属性控制
+
+### 浮动元素
+
+- 在正常流的位置向左或者向右移动到边界，占据一块排版空间
+- float 属性控制
+
+### flex 排版
+
+- 外部元素的 display 属性来控制
+
+## 位图操作
+
+### 渲染
+
+- 模型变成位图（内存里建立一张二维表格，每个像素对应的颜色）
+- 图形和文字
+
+	- 绘制的图形类 底层库 Windows平台GDI
+	- 字体库 根据字符的码点抽取出字形 Freetype
+
+		- 像素字形  6px 8px 等小尺寸
+		- 矢量字形
+
+- 不会把子元素绘制到渲染的位图上 减少重新渲染
+
+### 合成
+
+- 为一些元素创建一个“合成后的位图”，部分子元素渲染到合成的位图
+- 合成的策略
+
+	- 原则就是最大限度减少绘制次数原则
+	- 主流浏览器一般根据 position、transform 等属性来决定合成策略
+	- 新的 CSS 标准中，规定了 will-change 属性
+
+### 绘制
+
+- 位图最终绘制到屏幕上，变成肉眼可见的图像
+- 尽量避免"重排"和"重绘"
+
+	- “脏矩形”算法，把屏幕均匀地分成若干矩形区域
+
+## DOM
+
+### 文档对象模型， 语义的表现
+
+### DOM API
+
+- 节点：DOM 树形结构中的节点相关 API
+
+	- 统一的接口 Node
+	- Element元素型节点 
+
+		- HTMLElement
+
+			- HTMLAnchorElement
+			- HTMLAppleElement
+			- HTMLAreaElement
+			- HTMLAudioElement
+			- HTMLBaseElement
+			- HTMLBodyElement
+			- ...
+
+		- SVGElement
+
+			- SVGAElement
+			- SVGAltGlyphElement
+			- ...
+
+		- <tagname>...</tagname>
+
+	- Document 文档根节点
+	- CharacterData 字符数据
+
+		- Text 文本节点
+
+			- CDATASection CDATA节点
+			- text
+
+		- Comment 注释
+
+			- <1-- comments -->
+
+		- ProcessingInstruction 处理信息
+
+			- <?a 1?>
+
+	- DocumentFragment 文档片段
+	- DocumentType 文档类型
+
+		- <!Doctype html>
+
+- Node属性
+
+	- parentNode
+	- childNodes
+	- firstChild
+	- lastChild
+	- nextSibling
+	- previousSibling
+
+- Node操作DOM API
+
+	- 在父元素上操作
+	- appendChild
+	- insertBefore
+	- removeChild
+	- replaceChild
+
+- Node高级API
+
+	- compareDocumentPosition
+
+		- 是一个用于比较两个节点中关系的函数
+
+	- contains
+
+		- 检查一个节点是否包含另一个节点的函数
+
+	- isEqualNode
+
+		- 检查两个节点是否完全相同
+
+	- isSameNode
+
+		- 检查两个节点是否是同一个节点，实际上在 JavaScript 中可以用“===”
+
+	- cloneNode
+
+		-  复制一个节点，如果传入参数 true，则会连同子元素做深拷贝
+
+- document 对象创建节点
+
+	- createElement
+	- createTextNode
+	- createCDATASection
+	- createComment
+	- createProcessingInstruction
+	- createDocumentFragment
+	- createDocumentType
+
+- Element元素 Node子类
+
+	- 元素的 Attribute 当作字符串
+
+		- getAttribute
+		- setAttribute
+		- removeAttribute
+		- hasAttribute
+
+	- Attribute 当作节点
+
+		- getAttributeNode
+		- setAttributeNode
+
+- 查找元素
+
+	- querySelector
+	- querySelectorAll
+	- getElementById
+	- getElementsByName
+	- getElementsByTagName
+
+		- 能够动态更新的集合
+
+	- getElementsByClassName
+
+- 遍历
+
+	- NodeIterator
+	- TreeWalker
+	- 建议直接使用递归和 Node 的属性
+
+- 事件：触发和监听事件相关 API
+- Range：操作文字范围相关 API
+
+  var range = new Range(),
+   firstText = p.childNodes[1],
+   secondText = em.firstChild
+  range.setStart(firstText, 9) // do not forget the leading space
+  range.setEnd(secondText, 4)
+  var fragment = range.extractContents()
+  range.insertNode(document.createTextNode("aaaa"))
+
+	- 底层框架和富文本编辑类的业务
+
+- 遍历：遍历 DOM 需要的 API
+
+### 命名空间
+
+- 最主要的场景是 SVG
+- document
+
+	- createElementNS
+	- createAttributeNS
+
+- Element 创建元素和属性
+
+	- getAttributeNS
+	- setAttributeNS
+	- getAttributeNodeNS
+	- setAttributeNodeNS
+	- removeAttributeNS
+	- hasAttributeNS
+	- attributes.setNamedItemNS
+	- attributes.getNamedItemNS
+	- attributes.removeNamedItemNS
+
+- 创建 Document 或者 Doctype
+
+	- document.implementation.createDocument
+	- document.implementation.createDocumentType
+	- document.implementation.createHTMLDocument
+
+## CSSOM
+
+### 表现的属性，CSS对象模型
+
+### 描述样式表和规则等 CSS 的模型部分（CSSOM）
+
+- 使用 style 标签或者 link 标签创建
+- document.styleSheets 只读的列表
+- 修改样式表内容或规则
+
+	- document.styleSheets[0].insertRule("p { color:pink; }", 0)
+	- document.styleSheets[0].removeRule(0)
+	- document.styleSheets[0].cssRules
+
+- Rules
+
+	-  CSS 的 at-rule
+
+		- CSSStyleRule、CSSCharsetRule、CSSImportRule、CSSMediaRule、CSSFontFaceRule、CSSPageRule、CSSNamespaceRule、CSSKeyframesRule、CSSKeyframeRule、CSSSupportsRule
+		- CSSStyleRule 属性
+
+			- selectorText选择器部分
+
+				- 照选择器语法设置
+
+			- style样式部分
+
+				- 修改内联样式或 cssText工具属性
+
+	- 普通的样式规则
+
+- 元素最终经过 CSS 计算
+
+	- window.getComputedStyle(elt, pseudoElt)
+
+		- elt 要获取的元素
+		- pseudoElt 可选参数 选择伪元素
+
+### 元素视图相关的 View 部分（CSSOMView）
+
+- DOM API 的扩展， Element 接口上添加了显示相关
+- 窗口 API 操作浏览器窗口的位置、尺寸
+
+	- moveTo(x, y) 窗口移动到屏幕的特定坐标
+	- moveBy(x, y) 窗口移动特定距离
+	- resizeTo(x, y) 改变窗口大小到特定尺寸
+	- resizeBy(x, y) 改变窗口大小特定尺寸
+	- window.open() 的第三个参数
+
+		- window.open("about:blank", "_blank" ,"width=100,height=100,left=100,right=100" )
+
+	- 部分浏览器不支持，不适用于移动端浏览器
+
+- 滚动 API
+
+	- 视口滚动 API
+
+		- scrollX 是视口的属性，表示 X 方向上的当前滚动距离，有别名 pageXOffset
+		- scrollY 是视口的属性，表示 Y 方向上的当前滚动距离，有别名 pageYOffset
+		- scroll(x, y) 使得页面滚动到特定的位置，有别名 scrollTo，支持传入配置型参数 {top,left}
+		- scrollBy(x, y) 使得页面滚动特定的距离，支持传入配置型参数 {top, left}
+		- 页面的顶层容器的滚动
+
+	- 元素滚动 API
+
+		- scrollTop 元素的属性，表示 Y 方向上的当前滚动距离
+		- scrollLeft 元素的属性，表示 X 方向上的当前滚动距离
+		- scrollWidth 元素的属性，表示元素内部的滚动内容的宽度，一般来说会大于等于元素宽度
+		- scrollHeight 元素的属性，表示元素内部的滚动内容的高度，一般来说会大于等于元素高度
+		- scroll(x, y) 使得元素滚动到特定的位置，有别名 scrollTo，支持传入配置型参数 {top,left}
+		- scrollBy(x, y) 使得元素滚动到特定的位置，支持传入配置型参数 {top, left}
+		- scrollIntoView(arg) 滚动元素所在的父元素，使得元素滚动到可见区域，可以通过 arg来指定滚到中间、开始或者就近
+
+- 布局 API
+
+	- 全局尺寸信息
+
+		- window.innerHeight, window.innerWidth 这两个属性表示视口的大小
+		- window.outerWidth, window.outerHeight 这两个属性表示浏览器窗口占据的大小，很多浏览器没有实现，一般来说这两个属性无关紧要
+		- window.devicePixelRatio 这个属性非常重要，表示物理像素和 CSS 像素单位的倍率关系，Retina 屏这个值是 2，后来也出现了一些 3 倍的 Android 屏
+		- window.screen （屏幕尺寸相关的信息）
+
+			- window.screen.width, window.screen.height 设备的屏幕尺寸
+			- window.screen.availWidth, window.screen.availHeight 设备屏幕的可渲染区域尺
+寸，一些 Android 机器会把屏幕的一部分预留做固定按钮
+			- window.screen.colorDepth, window.screen.pixelDepth 这两个属性是固定值 24，应该是为了以后预留
+
+	- 元素的布局信息
+
+		- 只有盒有宽和高，元素是没有的
+		- getClientRects()
+
+			- 返回一个列表，包含元素对应的每一个盒所占据的客户端矩形区域，这里每一个矩形区域可以用 x, y, width, height 来获取它的位置和尺寸
+
+		- getBoundingClientRect()
+
+			- 它返回元素对应的所有盒的包裹的矩形区域
+			- 会包括当 overflow 为visible 时的子元素区域
+
+## 浏览器事件
+
+### pointer设备 （触摸屏和鼠标） 输入最终被抽象成屏幕上面的一个点
+
+### 捕获与冒泡
+
+- 捕获是计算机处理事件的逻辑
+- 冒泡是人类处理事件的逻辑
+- addEventListener
+
+	- 事件名称
+	- 事件处理函数
+	- 捕获还是冒泡
+
+		- once：只执行一次
+		- passive：承诺此事件监听不会调用 preventDefault，这有助于性能
+		- useCapture：是否捕获（否则冒泡）
+
+### 焦点
+
+- 键盘事件
+- 有且仅有一个“聚焦”的元素
+- document.body.focus()、document.body.blur()
+
+### 自定义事件
+
+- var evt = new Event("look", {"bubbles":true, "cancelable":false})
+document.dispatchEvent(evt)
+
+*XMind: ZEN - Trial Version*
